@@ -1,0 +1,155 @@
+---
+title: "Salamander_metadata"
+author: "Camila Rodriguez"
+date: "2025-02-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+
+# Package ID: knb-lter-cwt.3086.13 Cataloging System:https://pasta.lternet.edu.
+# Data set title: Plethodon hybrid zone capture-mark-recapture survey plots at the Coweeta Hyrdologic Laboratory, Otto, NC..
+# Data set creator:    - Coweeta Long Term Ecological Research Program 
+# Data set creator:  John Maerz - University of Georgia 
+# Metadata Provider:    -  
+# Contact:    - Information Manager LTER Network Office  - tech-support@lternet.edu
+# Contact:    - Coweeta LTER Information Manager   - cwtim@uga.edu
+# Metadata Link: https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-cwt.3086.13
+# Stylesheet v2.14 for metadata conversion into program: John H. Porter, Univ. Virginia, jporter@virginia.edu      
+# Uncomment the following lines to have R clear previous work, or set a working directory
+# rm(list=ls())      
+
+# setwd("C:/users/my_name/my_dir")       
+
+
+
+options(HTTPUserAgent="EDI_CodeGen")
+	      
+
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/knb-lter-cwt/3086/13/5f6cecee85daedc395c434a5af473ddd" 
+infile1 <- tempfile()
+try(download.file(inUrl1,infile1,method="curl",extra=paste0(' -A "',getOption("HTTPUserAgent"),'"')))
+if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
+
+                   
+ dt1 <-read.csv(infile1,header=F 
+          ,skip=1
+            ,sep="\t"  
+        , col.names=c(
+                    "Elevation",     
+                    "Plot",     
+                    "Month",     
+                    "Day",     
+                    "Year",     
+                    "Animal_ID",     
+                    "Sex",     
+                    "SVL",     
+                    "TotL",     
+                    "Mass",     
+                    "Wiley_Score_shermani",     
+                    "Wiley_Score_teyahalee",     
+                    "Maerz_Score_SLF",     
+                    "Maerz_Score_SLR",     
+                    "Maerz_Score_SRF",     
+                    "Maerz_Score_SRR",     
+                    "Maerz_Score_TL",     
+                    "Maerz_Score_TR"    ), check.names=TRUE)
+               
+unlink(infile1)
+		    
+# Fix any interval or ratio columns mistakenly read in as nominal and nominal columns read as numeric or dates read as strings
+                
+if (class(dt1$Elevation)=="factor") dt1$Elevation <-as.numeric(levels(dt1$Elevation))[as.integer(dt1$Elevation) ]               
+if (class(dt1$Elevation)=="character") dt1$Elevation <-as.numeric(dt1$Elevation)
+if (class(dt1$Plot)!="factor") dt1$Plot<- as.factor(dt1$Plot)
+if (class(dt1$Animal_ID)!="factor") dt1$Animal_ID<- as.factor(dt1$Animal_ID)
+if (class(dt1$Sex)!="factor") dt1$Sex<- as.factor(dt1$Sex)
+if (class(dt1$SVL)=="factor") dt1$SVL <-as.numeric(levels(dt1$SVL))[as.integer(dt1$SVL) ]               
+if (class(dt1$SVL)=="character") dt1$SVL <-as.numeric(dt1$SVL)
+if (class(dt1$TotL)=="factor") dt1$TotL <-as.numeric(levels(dt1$TotL))[as.integer(dt1$TotL) ]               
+if (class(dt1$TotL)=="character") dt1$TotL <-as.numeric(dt1$TotL)
+if (class(dt1$Mass)=="factor") dt1$Mass <-as.numeric(levels(dt1$Mass))[as.integer(dt1$Mass) ]               
+if (class(dt1$Mass)=="character") dt1$Mass <-as.numeric(dt1$Mass)
+if (class(dt1$Wiley_Score_shermani)=="factor") dt1$Wiley_Score_shermani <-as.numeric(levels(dt1$Wiley_Score_shermani))[as.integer(dt1$Wiley_Score_shermani) ]               
+if (class(dt1$Wiley_Score_shermani)=="character") dt1$Wiley_Score_shermani <-as.numeric(dt1$Wiley_Score_shermani)
+if (class(dt1$Wiley_Score_teyahalee)=="factor") dt1$Wiley_Score_teyahalee <-as.numeric(levels(dt1$Wiley_Score_teyahalee))[as.integer(dt1$Wiley_Score_teyahalee) ]               
+if (class(dt1$Wiley_Score_teyahalee)=="character") dt1$Wiley_Score_teyahalee <-as.numeric(dt1$Wiley_Score_teyahalee)
+if (class(dt1$Maerz_Score_SLF)=="factor") dt1$Maerz_Score_SLF <-as.numeric(levels(dt1$Maerz_Score_SLF))[as.integer(dt1$Maerz_Score_SLF) ]               
+if (class(dt1$Maerz_Score_SLF)=="character") dt1$Maerz_Score_SLF <-as.numeric(dt1$Maerz_Score_SLF)
+if (class(dt1$Maerz_Score_SLR)=="factor") dt1$Maerz_Score_SLR <-as.numeric(levels(dt1$Maerz_Score_SLR))[as.integer(dt1$Maerz_Score_SLR) ]               
+if (class(dt1$Maerz_Score_SLR)=="character") dt1$Maerz_Score_SLR <-as.numeric(dt1$Maerz_Score_SLR)
+if (class(dt1$Maerz_Score_SRF)=="factor") dt1$Maerz_Score_SRF <-as.numeric(levels(dt1$Maerz_Score_SRF))[as.integer(dt1$Maerz_Score_SRF) ]               
+if (class(dt1$Maerz_Score_SRF)=="character") dt1$Maerz_Score_SRF <-as.numeric(dt1$Maerz_Score_SRF)
+if (class(dt1$Maerz_Score_SRR)=="factor") dt1$Maerz_Score_SRR <-as.numeric(levels(dt1$Maerz_Score_SRR))[as.integer(dt1$Maerz_Score_SRR) ]               
+if (class(dt1$Maerz_Score_SRR)=="character") dt1$Maerz_Score_SRR <-as.numeric(dt1$Maerz_Score_SRR)
+if (class(dt1$Maerz_Score_TL)=="factor") dt1$Maerz_Score_TL <-as.numeric(levels(dt1$Maerz_Score_TL))[as.integer(dt1$Maerz_Score_TL) ]               
+if (class(dt1$Maerz_Score_TL)=="character") dt1$Maerz_Score_TL <-as.numeric(dt1$Maerz_Score_TL)
+if (class(dt1$Maerz_Score_TR)=="factor") dt1$Maerz_Score_TR <-as.numeric(levels(dt1$Maerz_Score_TR))[as.integer(dt1$Maerz_Score_TR) ]               
+if (class(dt1$Maerz_Score_TR)=="character") dt1$Maerz_Score_TR <-as.numeric(dt1$Maerz_Score_TR)
+                
+# Convert Missing Values to NA for non-dates
+                
+dt1$Elevation <- ifelse((trimws(as.character(dt1$Elevation))==trimws("NaN")),NA,dt1$Elevation)               
+suppressWarnings(dt1$Elevation <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Elevation))==as.character(as.numeric("NaN"))),NA,dt1$Elevation))
+dt1$Animal_ID <- as.factor(ifelse((trimws(as.character(dt1$Animal_ID))==trimws("NaN")),NA,as.character(dt1$Animal_ID)))
+dt1$SVL <- ifelse((trimws(as.character(dt1$SVL))==trimws("NaN")),NA,dt1$SVL)               
+suppressWarnings(dt1$SVL <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$SVL))==as.character(as.numeric("NaN"))),NA,dt1$SVL))
+dt1$TotL <- ifelse((trimws(as.character(dt1$TotL))==trimws("NaN")),NA,dt1$TotL)               
+suppressWarnings(dt1$TotL <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$TotL))==as.character(as.numeric("NaN"))),NA,dt1$TotL))
+dt1$Mass <- ifelse((trimws(as.character(dt1$Mass))==trimws("NaN")),NA,dt1$Mass)               
+suppressWarnings(dt1$Mass <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Mass))==as.character(as.numeric("NaN"))),NA,dt1$Mass))
+dt1$Wiley_Score_shermani <- ifelse((trimws(as.character(dt1$Wiley_Score_shermani))==trimws("NaN")),NA,dt1$Wiley_Score_shermani)               
+suppressWarnings(dt1$Wiley_Score_shermani <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Wiley_Score_shermani))==as.character(as.numeric("NaN"))),NA,dt1$Wiley_Score_shermani))
+dt1$Wiley_Score_teyahalee <- ifelse((trimws(as.character(dt1$Wiley_Score_teyahalee))==trimws("NaN")),NA,dt1$Wiley_Score_teyahalee)               
+suppressWarnings(dt1$Wiley_Score_teyahalee <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Wiley_Score_teyahalee))==as.character(as.numeric("NaN"))),NA,dt1$Wiley_Score_teyahalee))
+dt1$Maerz_Score_SLF <- ifelse((trimws(as.character(dt1$Maerz_Score_SLF))==trimws("NaN")),NA,dt1$Maerz_Score_SLF)               
+suppressWarnings(dt1$Maerz_Score_SLF <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Maerz_Score_SLF))==as.character(as.numeric("NaN"))),NA,dt1$Maerz_Score_SLF))
+dt1$Maerz_Score_SLR <- ifelse((trimws(as.character(dt1$Maerz_Score_SLR))==trimws("NaN")),NA,dt1$Maerz_Score_SLR)               
+suppressWarnings(dt1$Maerz_Score_SLR <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Maerz_Score_SLR))==as.character(as.numeric("NaN"))),NA,dt1$Maerz_Score_SLR))
+dt1$Maerz_Score_SRF <- ifelse((trimws(as.character(dt1$Maerz_Score_SRF))==trimws("NaN")),NA,dt1$Maerz_Score_SRF)               
+suppressWarnings(dt1$Maerz_Score_SRF <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Maerz_Score_SRF))==as.character(as.numeric("NaN"))),NA,dt1$Maerz_Score_SRF))
+dt1$Maerz_Score_SRR <- ifelse((trimws(as.character(dt1$Maerz_Score_SRR))==trimws("NaN")),NA,dt1$Maerz_Score_SRR)               
+suppressWarnings(dt1$Maerz_Score_SRR <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Maerz_Score_SRR))==as.character(as.numeric("NaN"))),NA,dt1$Maerz_Score_SRR))
+dt1$Maerz_Score_TL <- ifelse((trimws(as.character(dt1$Maerz_Score_TL))==trimws("NaN")),NA,dt1$Maerz_Score_TL)               
+suppressWarnings(dt1$Maerz_Score_TL <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Maerz_Score_TL))==as.character(as.numeric("NaN"))),NA,dt1$Maerz_Score_TL))
+dt1$Maerz_Score_TR <- ifelse((trimws(as.character(dt1$Maerz_Score_TR))==trimws("NaN")),NA,dt1$Maerz_Score_TR)               
+suppressWarnings(dt1$Maerz_Score_TR <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Maerz_Score_TR))==as.character(as.numeric("NaN"))),NA,dt1$Maerz_Score_TR))
+
+
+# Here is the structure of the input data frame:
+str(dt1)                            
+attach(dt1)                            
+# The analyses below are basic descriptions of the variables. After testing, they should be replaced.                 
+
+summary(Elevation)
+summary(Plot)
+summary(Month)
+summary(Day)
+summary(Year)
+summary(Animal_ID)
+summary(Sex)
+summary(SVL)
+summary(TotL)
+summary(Mass)
+summary(Wiley_Score_shermani)
+summary(Wiley_Score_teyahalee)
+summary(Maerz_Score_SLF)
+summary(Maerz_Score_SLR)
+summary(Maerz_Score_SRF)
+summary(Maerz_Score_SRR)
+summary(Maerz_Score_TL)
+summary(Maerz_Score_TR) 
+                # Get more details on character variables
+                 
+summary(as.factor(dt1$Plot)) 
+summary(as.factor(dt1$Animal_ID)) 
+summary(as.factor(dt1$Sex))
+detach(dt1)               
+        
+
+
+
+
+
+```
