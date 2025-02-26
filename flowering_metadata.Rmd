@@ -1,0 +1,166 @@
+---
+title: "Flowering_metadata"
+author: "Camila Rodriguez"
+date: "2025-02-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Package ID: knb-lter-cwt.5022.13 Cataloging System:https://pasta.lternet.edu.
+# Data set title: Ground observations of spring leaf emergence phenology at eight sites in and near the Coweeta basin (2011-2012)..
+# Data set creator:    - Coweeta Long Term Ecological Research Program 
+# Data set creator:  Jeff Hepinstall-Cymerman - University of Georgia 
+# Metadata Provider:    -  
+# Contact:    - Information Manager LTER Network Office  - tech-support@lternet.edu
+# Contact:    - Coweeta LTER Information Manager   - cwtim@uga.edu
+# Metadata Link: https://portal.lternet.edu/nis/metadataviewer?packageid=knb-lter-cwt.5022.13
+# Stylesheet v2.14 for metadata conversion into program: John H. Porter, Univ. Virginia, jporter@virginia.edu      
+# Uncomment the following lines to have R clear previous work, or set a working directory
+# rm(list=ls())      
+
+# setwd("C:/users/my_name/my_dir")       
+
+
+
+options(HTTPUserAgent="EDI_CodeGen")
+	      
+
+inUrl1  <- "https://pasta.lternet.edu/package/data/eml/knb-lter-cwt/5022/13/e36258b3c74f08054a974a5fe1703f9c" 
+infile1 <- tempfile()
+try(download.file(inUrl1,infile1,method="curl",extra=paste0(' -A "',getOption("HTTPUserAgent"),'"')))
+if (is.na(file.size(infile1))) download.file(inUrl1,infile1,method="auto")
+
+                   
+ dt1 <-read.csv(infile1,header=F 
+          ,skip=1
+            ,sep="\t"  
+        , col.names=c(
+                    "Site_ID_number",     
+                    "Subsampling_point_number",     
+                    "Subsampling_point_ID",     
+                    "Month",     
+                    "Day",     
+                    "Year",     
+                    "Julian_date",     
+                    "und_pic_id",     
+                    "can_pic_id",     
+                    "Flowers_visibility",     
+                    "Tree_scale",     
+                    "Shrub_scale",     
+                    "Percent_canopy_cover_digital_photo",     
+                    "Percent_green_veg_cover_understory_dig_photo",     
+                    "Flag_Percent_green_veg_cover_understory_dig_photo",     
+                    "Observer_initials",     
+                    "Latitude",     
+                    "Longitude",     
+                    "Genus_taxonomy_marked_tree",     
+                    "Species_taxonomy_marked_tree",     
+                    "Common_name_marked_tree",     
+                    "Permanent_tag_number_tree",     
+                    "Genus_taxonomy_marked_shrub",     
+                    "Species_taxonomy_marked_shrub",     
+                    "Common_name_marked_shrub"    ), check.names=TRUE)
+               
+unlink(infile1)
+		    
+# Fix any interval or ratio columns mistakenly read in as nominal and nominal columns read as numeric or dates read as strings
+                
+if (class(dt1$Site_ID_number)!="factor") dt1$Site_ID_number<- as.factor(dt1$Site_ID_number)
+if (class(dt1$Subsampling_point_number)!="factor") dt1$Subsampling_point_number<- as.factor(dt1$Subsampling_point_number)
+if (class(dt1$Subsampling_point_ID)!="factor") dt1$Subsampling_point_ID<- as.factor(dt1$Subsampling_point_ID)
+if (class(dt1$und_pic_id)!="factor") dt1$und_pic_id<- as.factor(dt1$und_pic_id)
+if (class(dt1$can_pic_id)!="factor") dt1$can_pic_id<- as.factor(dt1$can_pic_id)
+if (class(dt1$Flowers_visibility)!="factor") dt1$Flowers_visibility<- as.factor(dt1$Flowers_visibility)
+if (class(dt1$Percent_canopy_cover_digital_photo)=="factor") dt1$Percent_canopy_cover_digital_photo <-as.numeric(levels(dt1$Percent_canopy_cover_digital_photo))[as.integer(dt1$Percent_canopy_cover_digital_photo) ]               
+if (class(dt1$Percent_canopy_cover_digital_photo)=="character") dt1$Percent_canopy_cover_digital_photo <-as.numeric(dt1$Percent_canopy_cover_digital_photo)
+if (class(dt1$Percent_green_veg_cover_understory_dig_photo)=="factor") dt1$Percent_green_veg_cover_understory_dig_photo <-as.numeric(levels(dt1$Percent_green_veg_cover_understory_dig_photo))[as.integer(dt1$Percent_green_veg_cover_understory_dig_photo) ]               
+if (class(dt1$Percent_green_veg_cover_understory_dig_photo)=="character") dt1$Percent_green_veg_cover_understory_dig_photo <-as.numeric(dt1$Percent_green_veg_cover_understory_dig_photo)
+if (class(dt1$Flag_Percent_green_veg_cover_understory_dig_photo)!="factor") dt1$Flag_Percent_green_veg_cover_understory_dig_photo<- as.factor(dt1$Flag_Percent_green_veg_cover_understory_dig_photo)
+if (class(dt1$Observer_initials)!="factor") dt1$Observer_initials<- as.factor(dt1$Observer_initials)
+if (class(dt1$Latitude)=="factor") dt1$Latitude <-as.numeric(levels(dt1$Latitude))[as.integer(dt1$Latitude) ]               
+if (class(dt1$Latitude)=="character") dt1$Latitude <-as.numeric(dt1$Latitude)
+if (class(dt1$Longitude)=="factor") dt1$Longitude <-as.numeric(levels(dt1$Longitude))[as.integer(dt1$Longitude) ]               
+if (class(dt1$Longitude)=="character") dt1$Longitude <-as.numeric(dt1$Longitude)
+if (class(dt1$Genus_taxonomy_marked_tree)!="factor") dt1$Genus_taxonomy_marked_tree<- as.factor(dt1$Genus_taxonomy_marked_tree)
+if (class(dt1$Species_taxonomy_marked_tree)!="factor") dt1$Species_taxonomy_marked_tree<- as.factor(dt1$Species_taxonomy_marked_tree)
+if (class(dt1$Common_name_marked_tree)!="factor") dt1$Common_name_marked_tree<- as.factor(dt1$Common_name_marked_tree)
+if (class(dt1$Permanent_tag_number_tree)!="factor") dt1$Permanent_tag_number_tree<- as.factor(dt1$Permanent_tag_number_tree)
+if (class(dt1$Genus_taxonomy_marked_shrub)!="factor") dt1$Genus_taxonomy_marked_shrub<- as.factor(dt1$Genus_taxonomy_marked_shrub)
+if (class(dt1$Species_taxonomy_marked_shrub)!="factor") dt1$Species_taxonomy_marked_shrub<- as.factor(dt1$Species_taxonomy_marked_shrub)
+if (class(dt1$Common_name_marked_shrub)!="factor") dt1$Common_name_marked_shrub<- as.factor(dt1$Common_name_marked_shrub)
+                
+# Convert Missing Values to NA for non-dates
+                
+dt1$Site_ID_number <- as.factor(ifelse((trimws(as.character(dt1$Site_ID_number))==trimws("NaN")),NA,as.character(dt1$Site_ID_number)))
+dt1$Subsampling_point_number <- as.factor(ifelse((trimws(as.character(dt1$Subsampling_point_number))==trimws("NaN")),NA,as.character(dt1$Subsampling_point_number)))
+dt1$und_pic_id <- as.factor(ifelse((trimws(as.character(dt1$und_pic_id))==trimws("NaN")),NA,as.character(dt1$und_pic_id)))
+dt1$can_pic_id <- as.factor(ifelse((trimws(as.character(dt1$can_pic_id))==trimws("NaN")),NA,as.character(dt1$can_pic_id)))
+dt1$Percent_canopy_cover_digital_photo <- ifelse((trimws(as.character(dt1$Percent_canopy_cover_digital_photo))==trimws("NaN")),NA,dt1$Percent_canopy_cover_digital_photo)               
+suppressWarnings(dt1$Percent_canopy_cover_digital_photo <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Percent_canopy_cover_digital_photo))==as.character(as.numeric("NaN"))),NA,dt1$Percent_canopy_cover_digital_photo))
+dt1$Percent_green_veg_cover_understory_dig_photo <- ifelse((trimws(as.character(dt1$Percent_green_veg_cover_understory_dig_photo))==trimws("NaN")),NA,dt1$Percent_green_veg_cover_understory_dig_photo)               
+suppressWarnings(dt1$Percent_green_veg_cover_understory_dig_photo <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Percent_green_veg_cover_understory_dig_photo))==as.character(as.numeric("NaN"))),NA,dt1$Percent_green_veg_cover_understory_dig_photo))
+dt1$Latitude <- ifelse((trimws(as.character(dt1$Latitude))==trimws("NaN")),NA,dt1$Latitude)               
+suppressWarnings(dt1$Latitude <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Latitude))==as.character(as.numeric("NaN"))),NA,dt1$Latitude))
+dt1$Longitude <- ifelse((trimws(as.character(dt1$Longitude))==trimws("NaN")),NA,dt1$Longitude)               
+suppressWarnings(dt1$Longitude <- ifelse(!is.na(as.numeric("NaN")) & (trimws(as.character(dt1$Longitude))==as.character(as.numeric("NaN"))),NA,dt1$Longitude))
+dt1$Permanent_tag_number_tree <- as.factor(ifelse((trimws(as.character(dt1$Permanent_tag_number_tree))==trimws("NaN")),NA,as.character(dt1$Permanent_tag_number_tree)))
+
+
+# Here is the structure of the input data frame:
+str(dt1)                            
+attach(dt1)                            
+# The analyses below are basic descriptions of the variables. After testing, they should be replaced.                 
+
+summary(Site_ID_number)
+summary(Subsampling_point_number)
+summary(Subsampling_point_ID)
+summary(Month)
+summary(Day)
+summary(Year)
+summary(Julian_date)
+summary(und_pic_id)
+summary(can_pic_id)
+summary(Flowers_visibility)
+summary(Tree_scale)
+summary(Shrub_scale)
+summary(Percent_canopy_cover_digital_photo)
+summary(Percent_green_veg_cover_understory_dig_photo)
+summary(Flag_Percent_green_veg_cover_understory_dig_photo)
+summary(Observer_initials)
+summary(Latitude)
+summary(Longitude)
+summary(Genus_taxonomy_marked_tree)
+summary(Species_taxonomy_marked_tree)
+summary(Common_name_marked_tree)
+summary(Permanent_tag_number_tree)
+summary(Genus_taxonomy_marked_shrub)
+summary(Species_taxonomy_marked_shrub)
+summary(Common_name_marked_shrub) 
+                # Get more details on character variables
+                 
+summary(as.factor(dt1$Site_ID_number)) 
+summary(as.factor(dt1$Subsampling_point_number)) 
+summary(as.factor(dt1$Subsampling_point_ID)) 
+summary(as.factor(dt1$und_pic_id)) 
+summary(as.factor(dt1$can_pic_id)) 
+summary(as.factor(dt1$Flowers_visibility)) 
+summary(as.factor(dt1$Tree_scale)) 
+summary(as.factor(dt1$Shrub_scale)) 
+summary(as.factor(dt1$Flag_Percent_green_veg_cover_understory_dig_photo)) 
+summary(as.factor(dt1$Observer_initials)) 
+summary(as.factor(dt1$Genus_taxonomy_marked_tree)) 
+summary(as.factor(dt1$Species_taxonomy_marked_tree)) 
+summary(as.factor(dt1$Common_name_marked_tree)) 
+summary(as.factor(dt1$Permanent_tag_number_tree)) 
+summary(as.factor(dt1$Genus_taxonomy_marked_shrub)) 
+summary(as.factor(dt1$Species_taxonomy_marked_shrub)) 
+summary(as.factor(dt1$Common_name_marked_shrub))
+detach(dt1)               
+        
+
+
+
+
+
+
+```
