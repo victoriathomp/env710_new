@@ -23,7 +23,6 @@ output: html_document
 # setwd("C:/users/my_name/my_dir")       
 
 
-
 options(HTTPUserAgent="EDI_CodeGen")
 	      
 
