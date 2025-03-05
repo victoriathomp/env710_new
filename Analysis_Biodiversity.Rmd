@@ -1,0 +1,18 @@
+---
+title: "Biodiversity_Riparian_Forest"
+author: "Camila Rodriguez"
+date: "2025-03-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+Fish_salamander<- read.csv('Data/AS01001_v1.csv')
+invertebrate<- read.csv('Data/AS01002_v1.csv')
+transect_data_sites<- read.csv('Data/AS01003_v1.csv')
+wood_measurements<- read.csv('Data/AS01004_v1.csv')
+pool_measurement<-read.csv('Data/AS01005_v1.csv')
+
+
+```
+

@@ -1,0 +1,1 @@
+# Link for metadata: https://andlter.forestry.oregonstate.edu/data/abstract.aspx?dbcode=AS010
