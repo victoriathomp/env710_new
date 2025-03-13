@@ -75,52 +75,53 @@ ggsave("stream_qualities_plot.jpeg", stream_qualities_plot, width = 8, height = 
 (hist.width <- ggplot(pool_measurement, aes(x=WIDTH))+ geom_histogram(bins = 11) + theme_bw())
 ```
 
-```{r figure2, fig.cap = "Biodiversity Patterns across Forest Types: Species Richness, Species Abundance, and Shannon Diversity Index.", message=FALSE, warning=FALSE}
 
-# Calculate species richness: count of unique species per forest type
-species_richness <- Fish_salamander %>%
-  group_by(REACH_TYPE) %>%
-  summarise(Richness = n_distinct(SPECIES))
+```{r figure2, fig.cap = "Canopy Cover vs. Chlorophyll-a and Woody Debris Effect on Stream Structure"}
+# Canopy Cover vs. Chlorophyll-a (LOCKED)
+# Based on visible clues in the data, we removed points where canopy cover is < 35%.
+clean_canopy_data <- transect_data_sites %>%
+  filter(CANOPY_COVER >= 35)
 
-# Calculate species abundance: total count of individuals per forest type
-species_abundance <- Fish_salamander %>%
-  group_by(REACH_TYPE) %>%
-  summarise(Abundance = n())
-
-# Calculate Shannon diversity index:
-# First, calculate counts per species for each forest type, then compute the index.
-shannon_data <- Fish_salamander %>%
-  group_by(REACH_TYPE, SPECIES) %>%
-  summarise(Count = n()) %>%
-  group_by(REACH_TYPE) %>%
-  summarise(Diversity = -sum((Count / sum(Count)) * log(Count / sum(Count))))
-
-# Create a bar plot for species richness
-richness_plot <- ggplot(species_richness, aes(x = REACH_TYPE, y = Richness, fill = REACH_TYPE)) +
-  geom_bar(stat = "identity") +
+canopy_plot <- ggplot(clean_canopy_data, aes(x = REACH_TYPE, y = CHL_A_TILES, fill = REACH_TYPE)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.6) +
+  geom_jitter(aes(color = REACH_TYPE), width = 0.2, size = 1.5, alpha = 0.5) +
   scale_fill_manual(values = c("seagreen3", "dodgerblue")) +
-  labs(x = "Forest Type", y = "Unique Species Count", title = "Species Richness by Forest Type") +
-  theme_bw() + theme(legend.position = "none")
+  scale_color_manual(values = c("seagreen4", "blue4")) +
+  labs(
+    x = "Forest Type",
+    y = "Chlorophyll-a Concentration (µg/cm²)",
+    title = "Chlorophyll-a Levels in Old-Growth vs. Secondary Forests"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
 
-# Create a bar plot for species abundance
-abundance_plot <- ggplot(species_abundance, aes(x = REACH_TYPE, y = Abundance, fill = REACH_TYPE)) +
-  geom_bar(stat = "identity") +
+# Separate Histograms for OG and SG
+wood_histogram <- ggplot(wood_measurements, aes(x = WOOD_LENGTH, fill = REACH_TYPE)) +
+  geom_histogram(bins = 15, alpha = 0.7) +  # Individual histograms
   scale_fill_manual(values = c("seagreen3", "dodgerblue")) +
-  labs(x = "Forest Type", y = "Total Individual Count", title = "Species Abundance by Forest Type") +
-  theme_bw() + theme(legend.position = "none")
+  scale_x_log10() +  # Log scale for better spread
+  facet_wrap(~ REACH_TYPE) +  # Separate plots for OG and SG
+  labs(
+    x = "Woody Debris Length (log scale, cm)",
+    y = "Count",
+    title = "Woody Debris Size Distribution by Forest Type"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
 
-# Create a bar plot for the Shannon diversity index
-diversity_plot <- ggplot(shannon_data, aes(x = REACH_TYPE, y = Diversity, fill = REACH_TYPE)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("seagreen3", "dodgerblue")) +
-  labs(x = "Forest Type", y = "Shannon Diversity Index", title = "Species Diversity by Forest Type") +
-  theme_bw() + theme(legend.position = "none")
+# Combine Both Plots into One Figure with Proper Caption Spacing 
+combined_figure <- canopy_plot / wood_histogram +
+  plot_annotation(
+    caption = "Figure 2. Distribution of woody debris sizes in old-growth forest riparian zones and secondary growth riparian zones. Data collected July-October 2014 by HJ Andrews LTER."
+  ) &
+  theme(
+    plot.caption = element_text(hjust = 0.5, size = 10, face = "italic")  # Ensures proper alignment
+  )
 
-# Combine the three plots vertically using patchwork
-biodiversity_plots <- richness_plot / abundance_plot / diversity_plot
+# Save the figure with increased width
+ggsave("canopy_woodydebris.jpeg", combined_figure, width = 14, height = 10)  # Increased width
 
-# Save the combined figure to a JPEG file
-ggsave("biodiversity_patterns.jpeg", biodiversity_plots, width = 8, height = 12)
+# Display the figure
+combined_figure
+```
 
-# Display the combined figure
-biodiversity_plots
