@@ -15,9 +15,10 @@ pool_measurement<-read.csv('Data/AS01005_v1.csv')
 
 ```
 
-```{r load packages}
+```{r load packages, message=FALSE, warning=FALSE}
 library(ggplot2)
 library (patchwork)
+library(dplyr)
 ```
 
 ```{r figure 1, fig.cap = "Distribution of stream characteristics (maximum depth, depth at outflow, stream width, and stream length) in old-growth forest riparian zones and secondary growth riparian zones.}
@@ -74,3 +75,52 @@ ggsave("stream_qualities_plot.jpeg", stream_qualities_plot, width = 8, height = 
 (hist.width <- ggplot(pool_measurement, aes(x=WIDTH))+ geom_histogram(bins = 11) + theme_bw())
 ```
 
+```{r figure2, fig.cap = "Biodiversity Patterns across Forest Types: Species Richness, Species Abundance, and Shannon Diversity Index.", message=FALSE, warning=FALSE}
+
+# Calculate species richness: count of unique species per forest type
+species_richness <- Fish_salamander %>%
+  group_by(REACH_TYPE) %>%
+  summarise(Richness = n_distinct(SPECIES))
+
+# Calculate species abundance: total count of individuals per forest type
+species_abundance <- Fish_salamander %>%
+  group_by(REACH_TYPE) %>%
+  summarise(Abundance = n())
+
+# Calculate Shannon diversity index:
+# First, calculate counts per species for each forest type, then compute the index.
+shannon_data <- Fish_salamander %>%
+  group_by(REACH_TYPE, SPECIES) %>%
+  summarise(Count = n()) %>%
+  group_by(REACH_TYPE) %>%
+  summarise(Diversity = -sum((Count / sum(Count)) * log(Count / sum(Count))))
+
+# Create a bar plot for species richness
+richness_plot <- ggplot(species_richness, aes(x = REACH_TYPE, y = Richness, fill = REACH_TYPE)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("seagreen3", "dodgerblue")) +
+  labs(x = "Forest Type", y = "Unique Species Count", title = "Species Richness by Forest Type") +
+  theme_bw() + theme(legend.position = "none")
+
+# Create a bar plot for species abundance
+abundance_plot <- ggplot(species_abundance, aes(x = REACH_TYPE, y = Abundance, fill = REACH_TYPE)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("seagreen3", "dodgerblue")) +
+  labs(x = "Forest Type", y = "Total Individual Count", title = "Species Abundance by Forest Type") +
+  theme_bw() + theme(legend.position = "none")
+
+# Create a bar plot for the Shannon diversity index
+diversity_plot <- ggplot(shannon_data, aes(x = REACH_TYPE, y = Diversity, fill = REACH_TYPE)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("seagreen3", "dodgerblue")) +
+  labs(x = "Forest Type", y = "Shannon Diversity Index", title = "Species Diversity by Forest Type") +
+  theme_bw() + theme(legend.position = "none")
+
+# Combine the three plots vertically using patchwork
+biodiversity_plots <- richness_plot / abundance_plot / diversity_plot
+
+# Save the combined figure to a JPEG file
+ggsave("biodiversity_patterns.jpeg", biodiversity_plots, width = 8, height = 12)
+
+# Display the combined figure
+biodiversity_plots
