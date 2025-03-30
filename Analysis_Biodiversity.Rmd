@@ -4,20 +4,21 @@ author: "Camila Rodriguez"
 date: "2025-03-05"
 output: html_document
 ---
-
+## Setup and load datasets 
 ```{r setup, include=FALSE}
 
 Fish_salamander<- read.csv('Data/AS01001_v1.csv')
-invertebrate<- read.csv('Data/AS01002_v1.csv')
-transect_data_sites<- read.csv('Data/AS01003_v1.csv')
+#invertebrate<- read.csv('Data/AS01002_v1.csv') provided but not needed for our analysis
+stream_data<- read.csv('Data/AS01003_v1.csv')
 wood_measurements<- read.csv('Data/AS01004_v1.csv')
 pool_measurement<-read.csv('Data/AS01005_v1.csv')
 
-```
-
-```{r load packages}
+#install.packages("dplyr")
+#install.packages("tidyverse")
 library(ggplot2)
 library (patchwork)
+library(dplyr)
+library(tidyverse)
 ```
 
 ```{r figure 1, fig.cap = "Distribution of stream characteristics (maximum depth, depth at outflow, stream width, and stream length) in old-growth forest riparian zones and secondary growth riparian zones.}
@@ -72,5 +73,93 @@ ggsave("stream_qualities_plot.jpeg", stream_qualities_plot, width = 8, height = 
 (hist.outflowdepth <- ggplot(pool_measurement, aes(x=DEPTH_OUTFLOW))+ geom_histogram(bins = 11) + theme_bw())
 (hist.poollength <- ggplot(pool_measurement, aes(x=POOL_LENGTH))+ geom_histogram(bins = 11) + theme_bw())
 (hist.width <- ggplot(pool_measurement, aes(x=WIDTH))+ geom_histogram(bins = 11) + theme_bw())
+##
+
 ```
 
+## Abundance
+```{r}
+
+salamander<- Fish_salamander %>% filter(SPECIES== "DITE")%>%
+  mutate(SPECIES_NAME = "Dicamptodon tenebrosus (Coastal Giant Salamander)")
+
+salamander_abundance_by_pair <- function(salamander, correction_factor = 1.34) {
+  
+  salamander <- salamander %>%
+    mutate(SURVEY_METHOD = toupper(SURVEY_METHOD),
+           MARKED_UNMARKED = toupper(MARKED_UNMARKED))
+  
+  # Combine SITE and REACH_TYPE to define unique pairs
+  site_pairs <- salamander %>%
+    select(SITE, REACH_TYPE) %>%
+    distinct()
+  
+  results <- data.frame(
+    SITE = character(),
+    REACH_TYPE = character(),
+    Abundance_Estimate = numeric(),
+    Method = character(),
+    stringsAsFactors = FALSE
+  )
+  
+  for (i in 1:nrow(site_pairs)) {
+    site <- site_pairs$SITE[i]
+    reach <- site_pairs$REACH_TYPE[i]
+    
+    pair_data <- salamander %>%
+      filter(SITE == site, REACH_TYPE == reach)
+    
+    if (site %in% c("MCT_E", "MCT_W")) {
+      raw_count <- pair_data %>%
+        filter(SURVEY_METHOD %in% c("P1", "P2", "P3")) %>%
+        nrow()
+      est <- raw_count * correction_factor
+      method <- "Depletion (corrected)"
+      
+    } else if (all(c("M", "R") %in% unique(pair_data$SURVEY_METHOD))) {
+      M <- pair_data %>%
+        filter(SURVEY_METHOD == "M", MARKED_UNMARKED == "M") %>%
+        nrow()
+      C <- pair_data %>%
+        filter(SURVEY_METHOD == "R") %>%
+        nrow()
+      R <- pair_data %>%
+        filter(SURVEY_METHOD == "R", MARKED_UNMARKED == "M") %>%
+        nrow()
+      
+      est <- if (R > 0) ((M + 1) * (C + 1)) / (R + 1) - 1 else NA
+      method <- "Mark-recapture"
+      
+    } else {
+      est <- NA
+      method <- "Insufficient data"
+    }
+    
+    results <- rbind(
+      results,
+      data.frame(SITE = site, REACH_TYPE = reach,
+                 Abundance_Estimate = round(est, 2),
+                 Method = method,
+                 stringsAsFactors = FALSE)
+    )
+  }
+  
+  return(results)
+}
+
+abundance_by_pair <- salamander_abundance_by_pair(salamander)
+print(abundance_by_pair)
+
+```
+### Model 1
+```{r}
+#Salamander abundance as a function of canopy cover and wetted width (poisson)
+#DITE – Dicamptodon tenebrosus (Coastal Giant Salamander)
+#Poisson regression because we are interested in abundance 
+
+#salamander_abundance_reachtype <- salamander %>%
+  group_by(REACH_TYPE, DATE) %>%
+  summarise(abundance = n(), .groups = "drop")
+
+model1 <- lm(salamander_abundance_reachtype ~ CANOPY_COVER + wetted_width, data = salamander)
+```
