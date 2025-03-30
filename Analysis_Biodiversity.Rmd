@@ -13,14 +13,13 @@ stream_data<- read.csv('Data/AS01003_v1.csv')
 wood_measurements<- read.csv('Data/AS01004_v1.csv')
 pool_measurement<-read.csv('Data/AS01005_v1.csv')
 
-<<<<<<< HEAD
 #install.packages("dplyr")
 #install.packages("tidyverse")
 library(ggplot2)
 library (patchwork)
 library(dplyr)
 library(tidyverse)
-=======
+
 ```
 
 ### Exploratory Image 1 
@@ -85,7 +84,7 @@ ggsave("stream_qualities_plot.jpeg", stream_qualities_plot, width = 8, height = 
 ```{r figure2, fig.cap = "Canopy Cover vs. Chlorophyll-a and Woody Debris Effect on Stream Structure"}
 # Canopy Cover vs. Chlorophyll-a (LOCKED)
 # Based on visible clues in the data, we removed points where canopy cover is < 35%.
-clean_canopy_data <- transect_data_sites %>%
+clean_canopy_data <- stream_data %>%
   filter(CANOPY_COVER >= 35)
 
 canopy_plot <- ggplot(clean_canopy_data, aes(x = REACH_TYPE, y = CHL_A_TILES, fill = REACH_TYPE)) +
@@ -131,7 +130,7 @@ ggsave("canopy_woodydebris.jpeg", combined_figure, width = 14, height = 10)  # I
 combined_figure
 ```
 
-## Abundance
+## Abundance of salamanders 
 ```{r}
 
 salamander<- Fish_salamander %>% filter(SPECIES== "DITE")%>%
@@ -204,17 +203,30 @@ salamander_abundance_by_pair <- function(salamander, correction_factor = 1.34) {
 abundance_by_pair <- salamander_abundance_by_pair(salamander)
 print(abundance_by_pair)
 
+## We need 18 sites (9 paired sites)- need to adjust code to include 3 msising sites that were filtered for NA Data?
+
 ```
+### Join Tables for Regression
+```{r}
+full_salamander_data <- abundance_by_pair %>%
+  left_join(stream_data, by = c("SITE", "REACH_TYPE")) %>%
+  left_join(pool_measurement, by = c("SITE", "REACH_TYPE")) %>%
+  left_join(wood_measurements, by = c("SITE", "REACH_TYPE"))%>%
+  filter(!is.na(Abundance_Estimate)) %>%
+  drop_na() 
+```
+
+
 ### Model 1
 ```{r}
 #Salamander abundance as a function of canopy cover and wetted width (poisson)
 #DITE – Dicamptodon tenebrosus (Coastal Giant Salamander)
 #Poisson regression because we are interested in abundance 
 
-#salamander_abundance_reachtype <- salamander %>%
-  group_by(REACH_TYPE, DATE) %>%
-  summarise(abundance = n(), .groups = "drop")
+model1 <- lm(Abundance_Estimate ~ CANOPY_COVER + WETTED_WIDTH, data = full_salamander_data)
+summary(model1)
+plot(model1)
+AIC(model1)
 
-model1 <- lm(salamander_abundance_reachtype ~ CANOPY_COVER + wetted_width, data = salamander)
 ```
 
