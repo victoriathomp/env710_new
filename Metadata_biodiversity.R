@@ -1,5 +1,13 @@
 # Link for metadata: https://andlter.forestry.oregonstate.edu/data/abstract.aspx?dbcode=AS010
 
+
+#Entities: 
+  
+#1 Fish/salamander
+#2  invertebrate
+#3 Stream/ stream transect data
+#4
+#5 Pool measurement
 #More background info:
   
 Description:
