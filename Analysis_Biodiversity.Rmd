@@ -229,4 +229,33 @@ plot(model1)
 AIC(model1)
 
 ```
+### Model 2
+```{r}
+#Salamander abundance as a function of downed woody debris length and max pool depth
+# added wood length as a funcction of reach type because larger pieces of debris are found in old growth 
 
+#residuals have a pattern
+model2 <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE + factor(SITE), data = full_salamander_data)
+summary(model2)
+plot(model2)
+AIC(model2)
+
+#removing factor makes Q-Q more linear
+model2B <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE, data = full_salamander_data)
+summary(model2B)
+plot(model2B)
+AIC(model2B)
+
+#removing outlier site
+full_salamander_data_no_COOK <- full_salamander_data[full_salamander_data$SITE != "COOK", ]
+
+model2C <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE, data = full_salamander_data_no_COOK )
+summary(model2C)
+plot(model2C)
+AIC(model2C)
+
+model2D <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE + factor(SITE), data = full_salamander_data_no_COOK)
+summary(model2D)
+plot(model2D)
+AIC(model2D)
+```
