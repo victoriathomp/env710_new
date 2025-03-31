@@ -206,14 +206,91 @@ print(abundance_by_pair)
 ## We need 18 sites (9 paired sites)- need to adjust code to include 3 msising sites that were filtered for NA Data?
 
 ```
-### Join Tables for Regression
+### Join Tables for Regression - not using
 ```{r}
-full_salamander_data <- abundance_by_pair %>%
+full_salamander_data_old <- abundance_by_pair %>%
   left_join(stream_data, by = c("SITE", "REACH_TYPE")) %>%
   left_join(pool_measurement, by = c("SITE", "REACH_TYPE")) %>%
   left_join(wood_measurements, by = c("SITE", "REACH_TYPE"))%>%
   filter(!is.na(Abundance_Estimate)) %>%
-  drop_na() 
+  drop_na()
+``` 
+### Joining tables by aggregating stream, wood and pool for site and reach type
+```{r}
+# 1. Summarize stream data: includes width, canopy, and chlorophyll
+stream_summary <- stream_data %>%
+  group_by(SITE, REACH_TYPE) %>%
+  summarise(
+    BANKFULL_WIDTH = mean(BANKFULL_WIDTH, na.rm = TRUE),
+    WETTED_WIDTH = mean(WETTED_WIDTH, na.rm = TRUE),
+    CANOPY_COVER = mean(CANOPY_COVER, na.rm = TRUE),
+    CHL_A_TILES = mean(CHL_A_TILES, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# 2. Summarize pool measurements: depth and pool structure
+pool_summary <- pool_measurement %>%
+  group_by(SITE, REACH_TYPE) %>%
+  summarise(
+    DEPTH_MAX = mean(DEPTH_MAX, na.rm = TRUE),
+    DEPTH_OUTFLOW = mean(DEPTH_OUTFLOW, na.rm = TRUE),
+    DEPTH_RESIDUAL = mean(DEPTH_RESIDUAL, na.rm = TRUE),
+    POOL_LENGTH = mean(POOL_LENGTH, na.rm = TRUE),
+    WIDTH = mean(WIDTH, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# 3. Summarize wood measurements: size of woody debris
+wood_summary <- wood_measurements %>%
+  group_by(SITE, REACH_TYPE) %>%
+  summarise(
+    WOOD_LENGTH = mean(WOOD_LENGTH, na.rm = TRUE),
+    DIAMETER_1 = mean(DIAMETER_1, na.rm = TRUE),
+    DIAMETER_2 = mean(DIAMETER_2, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# 4. Join all summaries with abundance estimates
+full_salamander_data <- abundance_by_pair %>%
+  left_join(stream_summary, by = c("SITE", "REACH_TYPE")) %>%
+  left_join(pool_summary, by = c("SITE", "REACH_TYPE")) %>%
+  left_join(wood_summary, by = c("SITE", "REACH_TYPE")) %>%
+  filter(!is.na(Abundance_Estimate)) %>%
+  drop_na()
+
+```
+
+### Histogram of Abundance Estimates
+```{r}
+ggplot(full_salamander_data, aes(x = Abundance_Estimate)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 10, 
+                 fill = "lightblue", color = "black", alpha = 0.7) +
+  geom_density(color = "darkblue", linewidth = 1) +
+  labs(
+    title = "Distribution of Salamander Abundance Estimates (One Row per Site)",
+    x = "Abundance Estimate",
+    y = "Density"
+  ) +
+  theme_bw()
+
+# Shapiro-Wilk normality test (valid if sample size is between 3 and 5000)
+shapiro.test(full_salamander_data$Abundance_Estimate)
+```
+
+### Log Transformation
+```{r}
+# Add a small constant in case there are zeroes (shouldn't be any, but just in case)
+full_salamander_data$log_abundance <- log(full_salamander_data$Abundance_Estimate)
+
+# Check distribution again
+ggplot(full_salamander_data, aes(x = log_abundance)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 10, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_density(color = "darkblue", linewidth = 1) +
+  labs(title = "Log-Transformed Salamander Abundance", x = "log(Abundance)", y = "Density") +
+  theme_bw()
+
+# Shapiro-Wilk test on log-transformed values
+shapiro.test(full_salamander_data$log_abundance)
 ```
 
 
@@ -223,7 +300,7 @@ full_salamander_data <- abundance_by_pair %>%
 #DITE – Dicamptodon tenebrosus (Coastal Giant Salamander)
 #Poisson regression because we are interested in abundance 
 
-model1 <- lm(Abundance_Estimate ~ CANOPY_COVER + WETTED_WIDTH, data = full_salamander_data)
+model1 <- lm(log_abundance ~ CANOPY_COVER + WETTED_WIDTH, data = full_salamander_data)
 summary(model1)
 plot(model1)
 AIC(model1)
@@ -235,13 +312,13 @@ AIC(model1)
 # added wood length as a funcction of reach type because larger pieces of debris are found in old growth 
 
 #residuals have a pattern
-model2 <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE + factor(SITE), data = full_salamander_data)
+model2 <- lm(log_abundance ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE + factor(SITE), data = full_salamander_data)
 summary(model2)
 plot(model2)
 AIC(model2)
 
 #removing factor makes Q-Q more linear
-model2B <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE, data = full_salamander_data)
+model2B <- lm(log_abundance ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE, data = full_salamander_data)
 summary(model2B)
 plot(model2B)
 AIC(model2B)
@@ -249,13 +326,72 @@ AIC(model2B)
 #removing outlier site
 full_salamander_data_no_COOK <- full_salamander_data[full_salamander_data$SITE != "COOK", ]
 
-model2C <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE, data = full_salamander_data_no_COOK )
+model2C <- lm(log_abundance ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE, data = full_salamander_data_no_COOK )
 summary(model2C)
 plot(model2C)
 AIC(model2C)
 
-model2D <- lm(Abundance_Estimate ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE + factor(SITE), data = full_salamander_data_no_COOK)
+model2D <- lm(log_abundance ~ WOOD_LENGTH*REACH_TYPE + DEPTH_MAX*REACH_TYPE + factor(SITE), data = full_salamander_data_no_COOK)
 summary(model2D)
 plot(model2D)
 AIC(model2D)
 ```
+
+### Model 3
+```{r}
+# 1. Wilcoxon Rank-Sum Test: OG vs SG 
+wilcox_result <- wilcox.test(Abundance_Estimate ~ REACH_TYPE, data = full_salamander_data)
+print(wilcox_result)
+
+# Boxplot to visualize
+ggplot(full_salamander_data, aes(x = REACH_TYPE, y = Abundance_Estimate, fill = REACH_TYPE)) +
+  geom_boxplot(alpha = 0.6) +
+  geom_jitter(width = 0.1, size = 2, alpha = 0.7) +
+  scale_fill_manual(values = c("seagreen3", "dodgerblue")) +
+  labs(
+    title = "Salamander Abundance by Forest Type",
+    x = "Forest Type",
+    y = "Abundance"
+  ) +
+  theme_bw() +
+  theme(legend.position = "none")
+
+
+
+# 2. Spearman Correlation: Abundance vs DEPTH_MAX 
+depth_corr <- cor.test(full_salamander_data$Abundance_Estimate,
+                       full_salamander_data$DEPTH_MAX,
+                       method = "spearman")
+print(depth_corr)
+
+# Scatterplot
+ggplot(full_salamander_data, aes(x = DEPTH_MAX, y = Abundance_Estimate)) +
+  geom_point(color = "darkgreen", size = 2) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  labs(
+    title = "Abundance vs. Maximum Pool Depth",
+    x = "Maximum Pool Depth (cm)",
+    y = "Abundance"
+  ) +
+  theme_bw()
+
+
+
+# 3. Spearman Correlation: Abundance vs WOOD_LENGTH
+wood_corr <- cor.test(full_salamander_data$Abundance_Estimate,
+                      full_salamander_data$WOOD_LENGTH,
+                      method = "spearman")
+print(wood_corr)
+
+# Scatterplot
+ggplot(full_salamander_data, aes(x = WOOD_LENGTH, y = Abundance_Estimate)) +
+  geom_point(color = "sienna4", size = 2) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed") +
+  labs(
+    title = "Abundance vs. Woody Debris Length",
+    x = "Woody Debris Length (cm)",
+    y = "Abundance"
+  ) +
+  theme_bw()
+```
+
