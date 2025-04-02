@@ -19,6 +19,11 @@ library(ggplot2)
 library (patchwork)
 library(dplyr)
 library(tidyverse)
+library(here)
+library(lubridate)
+library(nlme)
+library(gtsummary)
+library(lme4)
 
 ```
 
@@ -80,7 +85,7 @@ ggsave("stream_qualities_plot.jpeg", stream_qualities_plot, width = 8, height = 
 
 ```
 
-### Expploratory Image 2
+### Exploratory Image 2
 ```{r figure2, fig.cap = "Canopy Cover vs. Chlorophyll-a and Woody Debris Effect on Stream Structure"}
 # Canopy Cover vs. Chlorophyll-a (LOCKED)
 # Based on visible clues in the data, we removed points where canopy cover is < 35%.
@@ -259,3 +264,80 @@ summary(model2D)
 plot(model2D)
 AIC(model2D)
 ```
+```{r VT experiment with data frame}
+salamander_only <- Fish_salamander %>% filter(SPECIES== "DITE")%>%
+  mutate(SPECIES_NAME = "Dicamptodon tenebrosus (Coastal Giant Salamander)")
+
+salamander_only_basic <- salamander_only %>% select(-c(DBCODE, ENTITY, DATE, MARKED_UNMARKED, VERT_NO, SPECIES, SPP_LIFESTAGE, TAIL_LENGTH, WEIGHT, SPECIES_NAME))
+
+salamander_only_basic_reordered <- salamander_only_basic[, c("REACH_TYPE", "SURVEY_METHOD", "SITE", "VENT_LENGTH")] 
+
+salamander_condensed <- salamander_only_basic_reordered %>%
+  group_by(SITE,REACH_TYPE, SURVEY_METHOD) %>%
+  summarize(avg_length = mean(VENT_LENGTH, na.rm = TRUE), .groups = "drop")
+
+wood_basic <- wood_measurements %>% select(-c(DBCODE, ENTITY, DATE, DIAMETER_1, DIAMETER_2, WOOD_LENGTH))
+wood_condensed <- wood_basic %>%
+  group_by(SITE,REACH_TYPE) %>%
+  summarize(number_of_wood_pieces = max(WOOD_PIECE, na.rm = TRUE), .groups = "drop")
+
+salamanders_and_wood <- salamander_condensed  %>%
+  left_join(wood_condensed, by = c("SITE", "REACH_TYPE"))
+
+water_basic <- pool_measurement %>% select(-c(DBCODE, ENTITY, DATE, POOL_NO, DEPTH_OUTFLOW, DEPTH_RESIDUAL, POOL_LENGTH, WIDTH))
+
+water_condensed <- water_basic %>%
+  group_by(SITE,REACH_TYPE) %>%
+  summarize(average_maximum_depth= mean(DEPTH_MAX, na.rm = TRUE), .groups = "drop")
+
+salamanders_and_wood_and_water <- salamanders_and_wood  %>%
+  left_join(water_condensed , by = c("SITE", "REACH_TYPE"))
+
+stream_basic <- stream_data %>% select(-c(DBCODE, ENTITY, DATE, METER, BANKFULL_WIDTH, WETTED_WIDTH, DATE_DEPLOYED_TILES, DATE_RETRIEVED_TILES, CHL_A_TILES))
+
+stream_condensed <- stream_basic %>%
+  group_by(SITE,REACH_TYPE) %>%
+  summarize(average_canopy_cover= mean(CANOPY_COVER, na.rm = TRUE), .groups = "drop")
+
+
+salamanders_and_wood_and_water_and_stream <- salamanders_and_wood_and_water  %>%
+  left_join(stream_condensed  , by = c("SITE", "REACH_TYPE"))
+
+#make all categorical variables factors 
+str(salamanders_and_wood_and_water_and_stream)
+
+salamanders_and_wood_and_water_and_stream <- salamanders_and_wood_and_water_and_stream %>% 
+  mutate(SITE= factor(SITE, levels = c("COOK", "FRITZ", "LO701", "LO703", "MCT_E", "MCT_W", "MR404", "STR")),
+         REACH_TYPE = factor(REACH_TYPE, levels= c("SG", "OG")),
+         SURVEY_METHOD = factor(SURVEY_METHOD, levels = c("M", "R", "P1", "P2", "P3")))
+
+#fit linear regression
+sala.lm1 <- lm(avg_length ~ SITE + REACH_TYPE + number_of_wood_pieces, data = salamanders_and_wood_and_water_and_stream)
+summary(sala.lm1)
+plot(sala.lm1)
+
+#fit linear regression with random effect 
+sala.lm2 <- gls(avg_length ~ SITE + REACH_TYPE + number_of_wood_pieces, data = salamanders_and_wood_and_water_and_stream)
+
+#for a multi-level model with random intercept by reach nested in plot
+
+#wood pieces
+sala.lmm3 <- lme(avg_length ~ SITE + REACH_TYPE + number_of_wood_pieces, random =~1 | REACH_TYPE/SITE, data = salamanders_and_wood_and_water_and_stream)
+
+summary(sala.lmm3)
+plot(sala.lmm3)
+
+#max depth
+sala.lmm4 <- lme(avg_length ~ SITE + REACH_TYPE + average_maximum_depth, random =~1 | REACH_TYPE/SITE, data = salamanders_and_wood_and_water_and_stream)
+
+summary(sala.lmm4)
+plot(sala.lmm4)
+
+#canopy cover
+sala.lmm5 <- lme(avg_length ~ SITE + REACH_TYPE + average_canopy_cover, random =~1 | REACH_TYPE/SITE, data = salamanders_and_wood_and_water_and_stream)
+
+summary(sala.lmm5)
+plot(sala.lmm5)
+
+```
+
