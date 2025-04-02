@@ -341,7 +341,7 @@ summary(model2D)
 plot(model2D)
 AIC(model2D)
 ```
-<<<<<<< HEAD
+
 ```{r VT experiment with data frame}
 salamander_only <- Fish_salamander %>% filter(SPECIES== "DITE")%>%
   mutate(SPECIES_NAME = "Dicamptodon tenebrosus (Coastal Giant Salamander)")
@@ -416,10 +416,9 @@ sala.lmm5 <- lme(avg_length ~ SITE + REACH_TYPE + average_canopy_cover, random =
 
 summary(sala.lmm5)
 plot(sala.lmm5)
-
-=======
-
+```
 ### Model 3
+
 ```{r}
 # 1. Wilcoxon Rank-Sum Test: OG vs SG 
 wilcox_result <- wilcox.test(Abundance_Estimate ~ REACH_TYPE, data = full_salamander_data)
@@ -475,6 +474,5 @@ ggplot(full_salamander_data, aes(x = WOOD_LENGTH, y = Abundance_Estimate)) +
     y = "Abundance"
   ) +
   theme_bw()
->>>>>>> 5e9cf5b72a1a637f839dbdf5b09db434eda47959
 ```
 
