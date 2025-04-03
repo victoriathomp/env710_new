@@ -412,10 +412,12 @@ summary(sala.lmm4)
 plot(sala.lmm4)
 
 #canopy cover
-sala.lmm5 <- lme(avg_length ~ SITE + REACH_TYPE + average_canopy_cover, random =~1 | REACH_TYPE/SITE, data = salamanders_and_wood_and_water_and_stream)
+sala.lmm5 <- lme(avg_length ~ REACH_TYPE + average_canopy_cover, random =~1 | REACH_TYPE/SITE, data = salamanders_and_wood_and_water_and_stream)
 
 summary(sala.lmm5)
 plot(sala.lmm5)
+
+#try running model without averages
 ```
 ### Model 3
 
