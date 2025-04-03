@@ -463,7 +463,7 @@ wood_corr <- cor.test(full_salamander_data$Abundance_Estimate,
                       full_salamander_data$WOOD_LENGTH,
                       method = "spearman")
 print(wood_corr)
-
+k
 # Scatterplot
 ggplot(full_salamander_data, aes(x = WOOD_LENGTH, y = Abundance_Estimate)) +
   geom_point(color = "sienna4", size = 2) +
