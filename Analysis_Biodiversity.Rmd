@@ -385,7 +385,7 @@ salamanders_and_wood_and_water_and_stream <- salamanders_and_wood_and_water  %>%
 str(salamanders_and_wood_and_water_and_stream)
 
 salamanders_and_wood_and_water_and_stream <- salamanders_and_wood_and_water_and_stream %>% 
-  mutate(SITE= factor(SITE, levels = c("COOK", "FRITZ", "LO701", "LO703", "MCT_E", "MCT_W", "MR404", "STR")),
+mutate(SITE= factor(SITE, levels = c("COOK", "FRITZ", "LO701", "LO703", "MCT_E", "MCT_W", "MR404", "STR")),
          REACH_TYPE = factor(REACH_TYPE, levels= c("SG", "OG")),
          SURVEY_METHOD = factor(SURVEY_METHOD, levels = c("M", "R", "P1", "P2", "P3")))
 

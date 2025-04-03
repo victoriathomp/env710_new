@@ -3,4 +3,118 @@ title: "New_Analysis_Salamanders"
 output: html_document
 ---
 
-## New code for salamander 
+## Setup and load datasets 
+```{r setup, include=FALSE}
+
+Fish_salamander<- read.csv('Data/AS01001_v1.csv')
+#invertebrate<- read.csv('Data/AS01002_v1.csv') provided but not needed for our analysis
+stream_data<- read.csv('Data/AS01003_v1.csv')
+wood_measurements<- read.csv('Data/AS01004_v1.csv')
+pool_measurement<-read.csv('Data/AS01005_v1.csv')
+
+#install.packages("dplyr")
+#install.packages("tidyverse")
+library(ggplot2)
+library (patchwork)
+library(dplyr)
+library(tidyverse)
+library(here)
+library(lubridate)
+library(nlme)
+library(gtsummary)
+library(lme4)
+
+```
+
+#clean dataset
+```{r}
+salamander_only <- Fish_salamander %>% filter(SPECIES== "DITE")%>%
+  mutate(SPECIES_NAME = "Dicamptodon tenebrosus (Coastal Giant Salamander)")
+
+#remove all the variables we are not using
+salamander_cleaned <- salamander_only %>% select(-c(DBCODE, ENTITY, DATE, MARKED_UNMARKED, VERT_NO, SPECIES, SPP_LIFESTAGE, TAIL_LENGTH, SPECIES_NAME))
+
+# add the predictor variable number of wood pieces
+# you have to condense this because measurements are by site/reach type and not by salamander
+wood_data <- wood_measurements %>% select(-c(DBCODE, ENTITY, DATE, DIAMETER_1, DIAMETER_2, WOOD_LENGTH))
+wood_data <- wood_data %>%
+  group_by(SITE,REACH_TYPE) %>%
+  summarize(number_of_wood_pieces = max(WOOD_PIECE, na.rm = TRUE), .groups = "drop")
+
+# add the predictor variable of avg canopy cover per site
+stream_data_cleaned <- stream_data %>% select(-c(DBCODE, ENTITY, DATE, METER, BANKFULL_WIDTH, WETTED_WIDTH, DATE_DEPLOYED_TILES, DATE_RETRIEVED_TILES, CHL_A_TILES))
+stream_data_cleaned <- stream_data_cleaned %>%
+  group_by(SITE,REACH_TYPE) %>%
+  summarize(average_canopy_cover= mean(CANOPY_COVER, na.rm = TRUE), .groups = "drop")
+
+# add the predictor variable of avg depth per site
+water_data <- pool_measurement %>% select(-c(DBCODE, ENTITY, DATE, POOL_NO, DEPTH_OUTFLOW, DEPTH_RESIDUAL, POOL_LENGTH, WIDTH))
+
+water_data <- water_data %>%
+  group_by(SITE,REACH_TYPE) %>%
+  summarize(average_maximum_depth= mean(DEPTH_MAX, na.rm = TRUE), .groups = "drop")
+
+#combine the salamander dataset with the predictor variable dataset
+salamanders_alldata <- salamander_cleaned  %>%
+  left_join(wood_data, by = c("SITE", "REACH_TYPE"))
+
+salamanders_alldata <- salamanders_alldata  %>%
+  left_join(stream_data_cleaned, by = c("SITE", "REACH_TYPE"))
+
+salamanders_alldata <- salamanders_alldata  %>%
+  left_join(water_data, by = c("SITE", "REACH_TYPE"))
+
+#make the non-numeric data factors instead of characters
+salamanders_alldata_factors  <- salamanders_alldata  %>% 
+mutate(SITE= factor(SITE, levels = c("COOK", "FRITZ", "LO701", "LO703", "MCT_E", "MCT_W", "MR404", "STR")),
+         REACH_TYPE = factor(REACH_TYPE, levels= c("SG", "OG")),
+         SURVEY_METHOD = factor(SURVEY_METHOD, levels = c("M", "R", "P1", "P2", "P3")))
+
+```
+#we have to decide whether to use height or weight- literature?
+
+#Model 1- number of woody debris
+```{r}
+#run regression with nested random variables
+#sala.lmm3 <- lme(VENT_LENGTH ~ REACH_TYPE + number_of_wood_pieces, random =~1 | REACH_TYPE/SITE, data = salamanders_and_wood_factors)
+
+#summary(sala.lmm3)
+#plot(sala.lmm3)
+
+# <- lme(VENT_LENGTH ~ REACH_TYPE + number_of_wood_pieces, random =~1 | REACH_TYPE/SITE, data = salamanders_and_wood_factors)
+
+#summary(sala.lmm3)
+#plot(sala.lmm3)
+
+
+sala.FINALMODEL1 <- lme(VENT_LENGTH ~ REACH_TYPE + log(number_of_wood_pieces), random =~1 | SITE, data = salamanders_alldata_factors)
+
+summary(sala.FINALMODEL1)
+plot(sala.FINALMODEL1)
+
+# take the log of the wood pieces because it is a COUNT 
+# why NaN for reach type- can be a problem when it is a fixed and random with low variability 
+
+```
+#Model 2- canopy cover
+```{r}
+
+
+sala.FINALMODEL2 <- lme(VENT_LENGTH ~ REACH_TYPE + average_canopy_cover, random =~1 | SITE, data = salamanders_alldata_factors)
+
+summary(sala.FINALMODEL2)
+plot(sala.FINALMODEL2)
+
+
+```
+#Model 3- average maximum stream depth cover
+```{r}
+
+
+sala.FINALMODEL3 <- lme(VENT_LENGTH ~ REACH_TYPE + average_maximum_depth, random =~1 | SITE, data = salamanders_alldata_factors)
+
+summary(sala.FINALMODEL3)
+plot(sala.FINALMODEL3)
+
+
+```
