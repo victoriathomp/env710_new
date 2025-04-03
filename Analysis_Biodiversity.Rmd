@@ -80,7 +80,7 @@ ggsave("stream_qualities_plot.jpeg", stream_qualities_plot, width = 8, height = 
 
 ```
 
-### Expploratory Image 2
+### Exploratory Image 2
 ```{r figure2, fig.cap = "Canopy Cover vs. Chlorophyll-a and Woody Debris Effect on Stream Structure"}
 # Canopy Cover vs. Chlorophyll-a (LOCKED)
 # Based on visible clues in the data, we removed points where canopy cover is < 35%.
