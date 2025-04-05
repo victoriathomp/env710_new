@@ -67,7 +67,7 @@ salamanders_alldata <- salamanders_alldata  %>%
 #make the non-numeric data factors instead of characters
 salamanders_alldata_factors  <- salamanders_alldata  %>% 
 mutate(SITE= factor(SITE, levels = c("COOK", "FRITZ", "LO701", "LO703", "MCT_E", "MCT_W", "MR404", "STR")),
-         REACH_TYPE = factor(REACH_TYPE, levels= c("SG", "OG")),
+         REACH_TYPE = factor(REACH_TYPE, levels= c("SG", "OG")), WEIGHT = as.numeric(WEIGHT),
          SURVEY_METHOD = factor(SURVEY_METHOD, levels = c("M", "R", "P1", "P2", "P3")))
 
 ```
@@ -92,6 +92,15 @@ sala.FINALMODEL1 <- lme(VENT_LENGTH ~ REACH_TYPE + log(number_of_wood_pieces), r
 summary(sala.FINALMODEL1)
 plot(sala.FINALMODEL1)
 
+salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
+  filter(SURVEY_METHOD != "R", !is.na(WEIGHT))
+
+sala.FINALMODEL1.1 <- lme(WEIGHT ~ REACH_TYPE + log(number_of_wood_pieces), random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
+
+summary(sala.FINALMODEL1.1)
+plot(sala.FINALMODEL1.1)
+
+
 # take the log of the wood pieces because it is a COUNT 
 # why NaN for reach type- can be a problem when it is a fixed and random with low variability 
 
@@ -105,6 +114,14 @@ sala.FINALMODEL2 <- lme(VENT_LENGTH ~ REACH_TYPE + average_canopy_cover, random 
 summary(sala.FINALMODEL2)
 plot(sala.FINALMODEL2)
 
+#remove R to filter weight NAs for analysis 
+salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
+  filter(SURVEY_METHOD != "R", !is.na(WEIGHT))
+
+sala.FINALMODEL2.1 <- lme(WEIGHT ~ REACH_TYPE + average_canopy_cover, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
+
+summary(sala.FINALMODEL2.1)
+plot(sala.FINALMODEL2.1)
 
 ```
 #Model 3- average maximum stream depth cover
@@ -115,6 +132,16 @@ sala.FINALMODEL3 <- lme(VENT_LENGTH ~ REACH_TYPE + average_maximum_depth, random
 
 summary(sala.FINALMODEL3)
 plot(sala.FINALMODEL3)
+
+#remove R to filter weight NAs for analysis 
+salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
+  filter(SURVEY_METHOD != "R", !is.na(WEIGHT))
+
+sala.FINALMODEL3.1 <- lme(WEIGHT ~ REACH_TYPE + average_maximum_depth, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
+
+summary(sala.FINALMODEL3.1)
+plot(sala.FINALMODEL3.1)
+
 
 
 ```
