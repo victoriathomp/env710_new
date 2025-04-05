@@ -70,8 +70,24 @@ mutate(SITE= factor(SITE, levels = c("COOK", "FRITZ", "LO701", "LO703", "MCT_E",
          REACH_TYPE = factor(REACH_TYPE, levels= c("SG", "OG")), WEIGHT = as.numeric(WEIGHT),
          SURVEY_METHOD = factor(SURVEY_METHOD, levels = c("M", "R", "P1", "P2", "P3")))
 
+# used when dependent variable is weight to filter NAs 
+salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
+  filter(SURVEY_METHOD != "R", !is.na(WEIGHT))
 ```
 #we have to decide whether to use height or weight- literature?
+
+#Exploratory Data Analysis
+```{r}
+ggplot(salamanders_alldata_filtered_minusR, aes(x = WEIGHT)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Salamander Weights", x = "Weight (g)", y = "Count") +
+  theme_minimal()
+
+# Add log-transformed WEIGHT column for improved model assumptions
+salamanders_alldata_filtered_minusR <- salamanders_alldata_filtered_minusR %>%
+  mutate(LOG_WEIGHT = log(WEIGHT))
+```
+
 
 #Model 1- number of woody debris
 ```{r}
@@ -92,10 +108,7 @@ mutate(SITE= factor(SITE, levels = c("COOK", "FRITZ", "LO701", "LO703", "MCT_E",
 #summary(sala.FINALMODEL1)
 #plot(sala.FINALMODEL1)
 
-salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
-  filter(SURVEY_METHOD != "R", !is.na(WEIGHT))
-
-sala.FINALMODEL1.1 <- lme(WEIGHT ~ REACH_TYPE + log(number_of_wood_pieces), random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
+sala.FINALMODEL1.1 <- lme(LOG_WEIGHT ~ REACH_TYPE + log(number_of_wood_pieces), random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
 
 summary(sala.FINALMODEL1.1)
 plot(sala.FINALMODEL1.1)
@@ -128,11 +141,7 @@ plot1
 #summary(sala.FINALMODEL2)
 #plot(sala.FINALMODEL2)
 
-#remove R to filter weight NAs for analysis 
-salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
-  filter(SURVEY_METHOD != "R", !is.na(WEIGHT))
-
-sala.FINALMODEL2.1 <- lme(WEIGHT ~ REACH_TYPE + average_canopy_cover, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
+sala.FINALMODEL2.1 <- lme(LOG_WEIGHT ~ REACH_TYPE + average_canopy_cover, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
 
 summary(sala.FINALMODEL2.1)
 plot(sala.FINALMODEL2.1)
@@ -159,11 +168,7 @@ plot2
 #summary(sala.FINALMODEL3)
 #plot(sala.FINALMODEL3)
 
-#remove R to filter weight NAs for analysis 
-salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
-  filter(SURVEY_METHOD != "R", !is.na(WEIGHT))
-
-sala.FINALMODEL3.1 <- lme(WEIGHT ~ REACH_TYPE + average_maximum_depth, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
+sala.FINALMODEL3.1 <- lme(LOG_WEIGHT ~ REACH_TYPE + average_maximum_depth, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
 
 summary(sala.FINALMODEL3.1)
 plot(sala.FINALMODEL3.1)
@@ -190,3 +195,4 @@ AIC(sala.FINALMODEL1.1)
 AIC(sala.FINALMODEL2.1)
 AIC(sala.FINALMODEL3.1)
 ```
+
