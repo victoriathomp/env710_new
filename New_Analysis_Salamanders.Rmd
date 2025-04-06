@@ -17,6 +17,8 @@ pool_measurement<-read.csv('Data/AS01005_v1.csv')
 library(ggplot2)
 library (patchwork)
 library(dplyr)
+library(tidyr)
+library(knitr)
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -96,6 +98,27 @@ cor_matrix <- cor(predictor_data, use = "complete.obs")
 print(cor_matrix)
 
 
+```
+
+#Descriptive Stats
+```{r}
+# Create a data frame of summary statistics
+desc_stats_clean <- salamanders_alldata_filtered_minusR %>%
+  mutate(LOG_WOOD = log(number_of_wood_pieces)) %>%
+  select(LOG_WEIGHT, LOG_WOOD, average_canopy_cover, average_maximum_depth) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value") %>%
+  group_by(Variable) %>%
+  summarise(
+    Mean = round(mean(Value, na.rm = TRUE), 2),
+    Median = round(median(Value, na.rm = TRUE), 2),
+    SD = round(sd(Value, na.rm = TRUE), 2),
+    Min = round(min(Value, na.rm = TRUE), 2),
+    Max = round(max(Value, na.rm = TRUE), 2),
+    .groups = "drop"
+  )
+
+# Print table
+kable(desc_stats_clean, caption = "Descriptive statistics for key continuous variables used in the models.")
 ```
 
 
