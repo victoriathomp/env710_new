@@ -17,6 +17,8 @@ pool_measurement<-read.csv('Data/AS01005_v1.csv')
 library(ggplot2)
 library (patchwork)
 library(dplyr)
+library(tidyr)
+library(knitr)
 library(tidyverse)
 library(here)
 library(lubridate)
@@ -86,6 +88,37 @@ ggplot(salamanders_alldata_filtered_minusR, aes(x = WEIGHT)) +
 # Add log-transformed WEIGHT column for improved model assumptions
 salamanders_alldata_filtered_minusR <- salamanders_alldata_filtered_minusR %>%
   mutate(LOG_WEIGHT = log(WEIGHT))
+
+# Correlation between predictor variables
+predictor_data <- salamanders_alldata_filtered_minusR %>%
+  select(number_of_wood_pieces, average_canopy_cover, average_maximum_depth)
+
+# Compute and display correlation matrix
+cor_matrix <- cor(predictor_data, use = "complete.obs")
+print(cor_matrix)
+
+
+```
+
+#Descriptive Stats
+```{r}
+# Create a data frame of summary statistics
+desc_stats_clean <- salamanders_alldata_filtered_minusR %>%
+  mutate(LOG_WOOD = log(number_of_wood_pieces)) %>%
+  select(LOG_WEIGHT, LOG_WOOD, average_canopy_cover, average_maximum_depth) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Value") %>%
+  group_by(Variable) %>%
+  summarise(
+    Mean = round(mean(Value, na.rm = TRUE), 2),
+    Median = round(median(Value, na.rm = TRUE), 2),
+    SD = round(sd(Value, na.rm = TRUE), 2),
+    Min = round(min(Value, na.rm = TRUE), 2),
+    Max = round(max(Value, na.rm = TRUE), 2),
+    .groups = "drop"
+  )
+
+# Print table
+kable(desc_stats_clean, caption = "Descriptive statistics for key continuous variables used in the models.")
 ```
 
 
@@ -108,28 +141,72 @@ salamanders_alldata_filtered_minusR <- salamanders_alldata_filtered_minusR %>%
 #summary(sala.FINALMODEL1)
 #plot(sala.FINALMODEL1)
 
+# take the log of the wood pieces because it is a COUNT 
 sala.FINALMODEL1.1 <- lme(LOG_WEIGHT ~ REACH_TYPE + log(number_of_wood_pieces), random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
 
 summary(sala.FINALMODEL1.1)
-plot(sala.FINALMODEL1.1)
+
 
 
 plot1<- ggplot(salamanders_alldata_filtered_minusR, 
        aes(x = log(number_of_wood_pieces), y = WEIGHT)) +
   geom_point(aes(color = REACH_TYPE), alpha = 0.3, size = 1.5) +
   geom_smooth(method = "lm", se = TRUE, color = "black", size = 1.3) +
-  scale_color_manual(values = c("SG" = "magenta", "OG" = "green")) +
-  facet_wrap(~REACH_TYPE) +
-  coord_cartesian(ylim = c(0, 50)) +
-  labs(title = "Salamander Weight vs. Log(Wood Pieces)",
-       x = "Log(Number of Wood Pieces)",
-       y = "Observed Salamander Weight (g)") +
-  theme_minimal(base_size = 14) +
-  theme(legend.position = "none")
+  scale_color_manual(values = c("SG" = "magenta", "OG" = "green")) 
 
 plot1
 
-# take the log of the wood pieces because it is a COUNT 
+# Model 1 Effect Plot
+model1_effect_plot <- ggplot(salamanders_alldata_filtered_minusR, 
+       aes(x = log(number_of_wood_pieces), y = LOG_WEIGHT)) +
+  geom_point(aes(color = REACH_TYPE), alpha = 0.5, size = 1.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "black", linewidth = 1.2) +
+
+  facet_wrap(~REACH_TYPE) +
+  labs(title = "Model 1: Log(Weight) vs. Log(Wood Pieces) by Reach Type",
+       x = "Log(Number of Wood Pieces)",
+       y = "Log(Salamander Weight)") +
+  scale_color_manual(values = c("SG" = "#8B4513",  
+                                "OG" = "#228B22")) + 
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none",
+        panel.grid.minor = element_blank(),
+        strip.background = element_rect(fill = "#f0f0f0", color = NA),
+        plot.title = element_text(face = "bold", size = 15))
+
+print(model1_effect_plot)
+
+#Model 1 Residuals vs. Fitted Plot
+model1_resid_df <- data.frame(
+  Fitted = fitted(sala.FINALMODEL1.1),
+  Residuals = resid(sala.FINALMODEL1.1, type = "pearson")
+)
+
+model1_resid_plot <- ggplot(model1_resid_df, aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Model 1: Residuals vs. Fitted",
+       x = "Fitted Values", y = "Pearson Residuals") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold", size = 14))
+
+print(model1_resid_plot)
+
+#Model 1 Q-Q Plot
+
+model1_qq_df <- data.frame(sample = resid(sala.FINALMODEL1.1, type = "pearson"))
+
+model1_qq_plot <- ggplot(model1_qq_df, aes(sample = sample)) +
+  stat_qq(alpha = 0.4, color = "steelblue") +  # Sea green
+  stat_qq_line(color = "red") +         # Brown
+  labs(title = "Model 1: Q-Q Plot of Residuals",
+       x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold", size = 14))
+
+print(model1_qq_plot)
+
+
 # why NaN for reach type- can be a problem when it is a fixed and random with low variability 
 
 ```
@@ -145,24 +222,59 @@ plot1
 sala.FINALMODEL2.1 <- lme(LOG_WEIGHT ~ REACH_TYPE + average_canopy_cover, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
 
 summary(sala.FINALMODEL2.1)
-plot(sala.FINALMODEL2.1)
 
-plot2<- ggplot(salamanders_alldata_filtered_minusR, 
-       aes(x = average_canopy_cover, y = WEIGHT)) +
-  geom_point(aes(color = REACH_TYPE), alpha = 0.3) +
-  geom_smooth(method = "lm", se = TRUE, color = "black", size = 1.2) +
+
+# Model 2 Effect Plot
+model2_effect_plot <- ggplot(salamanders_alldata_filtered_minusR, 
+       aes(x = average_canopy_cover, y = LOG_WEIGHT)) +
+  geom_point(aes(color = REACH_TYPE), alpha = 0.5, size = 1.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "black", linewidth = 1.2) +
   facet_wrap(~REACH_TYPE) +
-  scale_color_manual(values = c("SG" = "magenta", "OG" = "green4")) +
-  labs(title = "Salamander Weight vs. Canopy Cover by Reach Type",
+  labs(title = "Model 2: Log(Weight) vs. Canopy Cover by Reach Type",
        x = "Average Canopy Cover (%)",
-       y = "Observed Salamander Weight (g)",
-       color = "Reach Type") +
-  theme_minimal(base_size = 14)
+       y = "Log(Salamander Weight)") +
+  scale_color_manual(values = c("SG" = "#8B4513",  # Brown
+                                "OG" = "#228B22")) +  # Forest green
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none",
+        panel.grid.minor = element_blank(),
+        strip.background = element_rect(fill = "#f0f0f0", color = NA),
+        plot.title = element_text(face = "bold", size = 15))
 
-plot2
+print(model2_effect_plot)
+
+# Model 2 Residuals vs. Fitted Plot
+model2_resid_df <- data.frame(
+  Fitted = fitted(sala.FINALMODEL2.1),
+  Residuals = resid(sala.FINALMODEL2.1, type = "pearson")
+)
+
+model2_resid_plot <- ggplot(model2_resid_df, aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Model 2: Residuals vs. Fitted",
+       x = "Fitted Values", y = "Pearson Residuals") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold", size = 14))
+
+print(model2_resid_plot)
+
+# Model 2 Q-Q Plot
+model2_qq_df <- data.frame(sample = resid(sala.FINALMODEL2.1, type = "pearson"))
+
+model2_qq_plot <- ggplot(model2_qq_df, aes(sample = sample)) +
+  stat_qq(alpha = 0.4, color = "steelblue") +
+  stat_qq_line(color = "red") +
+  labs(title = "Model 2: Q-Q Plot of Residuals",
+       x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold", size = 14))
+
+print(model2_qq_plot)
 
 
 ```
+
 #Model 3- average maximum stream depth cover
 ```{r}
 #sala.FINALMODEL3 <- lme(VENT_LENGTH ~ REACH_TYPE + average_maximum_depth, random =~1 | SITE, data = salamanders_alldata_factors)
@@ -173,22 +285,58 @@ plot2
 sala.FINALMODEL3.1 <- lme(LOG_WEIGHT ~ REACH_TYPE + average_maximum_depth, random =~1 | SITE, data = salamanders_alldata_filtered_minusR)
 
 summary(sala.FINALMODEL3.1)
-plot(sala.FINALMODEL3.1)
 
+# Model 3 effect 
+model3_effect_plot <- ggplot(salamanders_alldata_filtered_minusR, 
+       aes(x = average_maximum_depth, y = LOG_WEIGHT)) +
+  geom_point(aes(color = REACH_TYPE), alpha = 0.5, size = 1.5) +
+  geom_smooth(method = "lm", se = TRUE, color = "black", linewidth = 1.2) +
+  facet_wrap(~REACH_TYPE) +
+  labs(title = "Model 3: Log(Weight) vs. Maximum Pool Depth by Reach Type",
+       x = "Average Maximum Depth (cm)",
+       y = "Log(Salamander Weight)") +
+  scale_color_manual(values = c("SG" = "#8B4513", "OG" = "#228B22")) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none",
+        panel.grid.minor = element_blank(),
+        strip.background = element_rect(fill = "#f0f0f0", color = NA),
+        plot.title = element_text(face = "bold", size = 15))
 
-#No signficant relationship for weight 
-plot3<- ggplot(salamanders_alldata_filtered_minusR, aes(x = REACH_TYPE, y = WEIGHT, fill = REACH_TYPE)) +
-  geom_boxplot(alpha = 0.5, outlier.shape = NA) +
-  geom_jitter(aes(color = SITE), width = 0.2, alpha = 0.4, size = 1.5) +
-  facet_wrap(~SITE) +
-  labs(title = "Salamander Weight by Reach Type Across Sites",
-       x = "Reach Type",
-       y = "Weight (g)") +
+print(model3_effect_plot)
+
+# Model 3 Residuals vs. Fitted
+model3_resid_df <- data.frame(
+  Fitted = fitted(sala.FINALMODEL3.1),
+  Residuals = resid(sala.FINALMODEL3.1, type = "pearson")
+)
+
+model3_resid_plot <- ggplot(model3_resid_df, aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.4, color = "steelblue") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Model 3: Residuals vs. Fitted",
+       x = "Fitted Values", y = "Pearson Residuals") +
   theme_minimal(base_size = 13) +
-  theme(legend.position = "bottom")
+  theme(plot.title = element_text(face = "bold", size = 14))
 
+<<<<<<< HEAD
 
 plot3
+=======
+print(model3_resid_plot)
+
+#Model 3 Q-Q Plot
+model3_qq_df <- data.frame(sample = resid(sala.FINALMODEL3.1, type = "pearson"))
+
+model3_qq_plot <- ggplot(model3_qq_df, aes(sample = sample)) +
+  stat_qq(alpha = 0.4, color = "steelblue") +
+  stat_qq_line(color = "red") +
+  labs(title = "Model 3: Q-Q Plot of Residuals",
+       x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold", size = 14))
+
+print(model3_qq_plot)
+>>>>>>> 9d09fa4c447272d6d8ce2f9cf53dbf09e4853f76
 ```
 
 ## Comparing Model Performance
