@@ -29,6 +29,17 @@ library(lme4)
 
 ### Exploratory Image 1 
 ```{r figure 1, fig.cap = "Distribution of stream characteristics (maximum depth, depth at outflow, stream width, and stream length) in old-growth forest riparian zones and secondary growth riparian zones.}
+mytheme <- theme_bw() +
+  theme(
+    legend.position = "none",
+    text = element_text(size = 12),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 10),
+    plot.title = element_text(size = 14, face = "bold"),
+    strip.text = element_text(size = 12),
+    plot.caption = element_text(size = 10)
+  )
+
 binnumber <- 2 * (172)^(1/3)
 binnumber
 
@@ -37,8 +48,8 @@ geom_histogram(bins = 11) + # creates histograms
   facet_wrap (~ REACH_TYPE) +
   scale_fill_manual(values= c('seagreen3', 'dodgerblue')) +
 labs(x = "Depth (cm)",
-y = "Count", title = "Figure 1. Distribution of stream characteristics by forest treatment") +
-   theme_bw() + theme(legend.position = "none") 
+y = "Count", title = "Distribution of stream characteristics by forest treatment") +
+   mytheme + theme(legend.position = "none") 
 
 flowdepth_plot <-  ggplot(pool_measurement, aes(x = DEPTH_OUTFLOW, fill = REACH_TYPE)) +
 geom_histogram(bins = 11) + # creates histograms
@@ -46,7 +57,7 @@ geom_histogram(bins = 11) + # creates histograms
   scale_fill_manual(values= c('seagreen3', 'dodgerblue')) +
 labs(x = "Depth at stream outflow (cm)",
 y = "Count") +
-  theme_bw() + theme(legend.position = "none") 
+  mytheme + theme(legend.position = "none")
 
 width_plot <-  ggplot(pool_measurement, aes(x = WIDTH, fill = REACH_TYPE)) +
 geom_histogram(bins = 11) + # creates histograms
@@ -54,7 +65,7 @@ geom_histogram(bins = 11) + # creates histograms
   scale_fill_manual(values= c('seagreen3', 'dodgerblue')) +
 labs(x = "Pool width (cm)",
 y = "Count") +
-   theme_bw() + theme(legend.position = "none")
+   mytheme + theme(legend.position = "none")
 
 length_plot <-  ggplot(pool_measurement, aes(x = POOL_LENGTH, fill = REACH_TYPE)) +
 geom_histogram(bins = 11) + # creates histograms
@@ -65,7 +76,7 @@ y = "Count", caption = "Figure 1. Distribution of stream characteristics
 (maximum depth, depth at outflow, stream width, and stream length) in 
 old-growth forest riparian zones and secondary growth riparian zones. 
 Data collected July-October 2014 by HJ Andrews LTER") +
-  theme_bw() + theme(legend.position = "none")
+  mytheme + theme(legend.position = "none")
 
 
 stream_qualities_plot <- depth_plot / flowdepth_plot / width_plot / length_plot 
@@ -102,7 +113,7 @@ canopy_plot <- ggplot(clean_canopy_data, aes(x = REACH_TYPE, y = CHL_A_TILES, fi
     y = "Chlorophyll-a Concentration (µg/cm²)",
     title = "Chlorophyll-a Levels in Old-Growth vs. Secondary Forests"
   ) +
-  theme_bw() +
+  mytheme +
   theme(legend.position = "none")
 
 # Separate Histograms for OG and SG
@@ -116,13 +127,13 @@ wood_histogram <- ggplot(wood_measurements, aes(x = WOOD_LENGTH, fill = REACH_TY
     y = "Count",
     title = "Woody Debris Size Distribution by Forest Type"
   ) +
-  theme_bw() +
+  mytheme +
   theme(legend.position = "none")
 
 # Combine Both Plots into One Figure with Proper Caption Spacing 
 combined_figure <- canopy_plot / wood_histogram +
   plot_annotation(
-    caption = "Figure 2. Distribution of woody debris sizes in old-growth forest riparian zones and secondary growth riparian zones. Data collected July-October 2014 by HJ Andrews LTER."
+    caption = "Distribution of woody debris sizes in old-growth forest riparian zones and secondary growth riparian zones. Data collected July-October 2014 by HJ Andrews LTER."
   ) &
   theme(
     plot.caption = element_text(hjust = 0.5, size = 10, face = "italic")  # Ensures proper alignment

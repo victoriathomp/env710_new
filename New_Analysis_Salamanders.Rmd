@@ -80,7 +80,7 @@ salamanders_alldata_filtered_minusR <- salamanders_alldata_factors %>%
 
 #Exploratory Data Analysis
 ```{r}
-ggplot(salamanders_alldata_filtered_minusR, aes(x = WEIGHT)) +
+salamander_weight <- ggplot(salamanders_alldata_filtered_minusR, aes(x = WEIGHT)) +
   geom_histogram(bins = 30, fill = "steelblue", color = "white") +
   labs(title = "Distribution of Salamander Weights", x = "Weight (g)", y = "Count") +
   theme_minimal()
@@ -88,6 +88,16 @@ ggplot(salamanders_alldata_filtered_minusR, aes(x = WEIGHT)) +
 # Add log-transformed WEIGHT column for improved model assumptions
 salamanders_alldata_filtered_minusR <- salamanders_alldata_filtered_minusR %>%
   mutate(LOG_WEIGHT = log(WEIGHT))
+
+# Plot log-transformed WEIGHT
+salamander_log_weight <- ggplot(salamanders_alldata_filtered_minusR, aes(x = LOG_WEIGHT)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Log-Transformed Salamander Weights", x = "Weight (g)", y = "Count") +
+  theme_minimal()
+
+# Plot WEIGHT and LOG_WEIGHT side-by-side
+salamander_weight_combined_plot <- salamander_weight / salamander_log_weight
+print(salamander_weight_combined_plot)
 
 # Correlation between predictor variables
 predictor_data <- salamanders_alldata_filtered_minusR %>%
@@ -97,6 +107,27 @@ predictor_data <- salamanders_alldata_filtered_minusR %>%
 cor_matrix <- cor(predictor_data, use = "complete.obs")
 print(cor_matrix)
 
+# Distribution of log(Woody debris count)
+woody_debris <- ggplot(salamanders_alldata_filtered_minusR, aes(x = log(number_of_wood_pieces))) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of log-transformed Woody Debris Count", x = "Weight (g)", y = "Count") +
+  theme_minimal()
+
+# Distribution of depth
+depth <- ggplot(salamanders_alldata_filtered_minusR, aes(x = average_maximum_depth)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Average Maximum Depths", x = "Weight (g)", y = "Count") +
+  theme_minimal()
+  
+# Distribution of canopy cover
+canopycover <- ggplot(salamanders_alldata_filtered_minusR, aes(x = average_canopy_cover)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(title = "Distribution of Average Canopy Cover", x = "Weight (g)", y = "Count") +
+  theme_minimal()
+
+# distribution of predictor variables
+predictor_variables_distribution <- woody_debris / depth / canopycover
+print(predictor_variables_distribution)
 
 ```
 
@@ -134,7 +165,6 @@ kable(desc_stats_clean, caption = "Descriptive statistics for key continuous var
 
 #summary(sala.lmm3)
 #plot(sala.lmm3)
-
 
 #sala.FINALMODEL1 <- lme(VENT_LENGTH ~ REACH_TYPE + log(number_of_wood_pieces), random =~1 | SITE, data = salamanders_alldata_factors)
 
